@@ -39,6 +39,12 @@ class BitLinear(nn.Linear):
 
     """
 
+    def __init__(self, *args, **kwargs):
+        self.rmsnorm = SimpleRMSNorm(self.in_features)
+        self.quantized = False
+        super().__init__(*args, **kwargs)
+
+
     def forward(self, x: Tensor) -> Tensor:
         """
         Forward pass of the BitLinear layer.
@@ -51,10 +57,12 @@ class BitLinear(nn.Linear):
 
         """
         w = self.weight
-        x_norm = SimpleRMSNorm(self.in_features)(x)
+        x_norm = self.rmsnorm(x)
 
         # STE using detach
         x_quant = x_norm + (activation_quant(x_norm) - x_norm).detach()
-        w_quant = w + (weight_quant(w) - w).detach()
-        y = F.linear(x_quant, w_quant)
+        if not self.quantized:
+            self.quantized = True
+            w_quant = w + (weight_quant(w) - w).detach()
+        y = F.linear(x_quant, w_quant, self.bias)
         return y

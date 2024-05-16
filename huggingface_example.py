@@ -1,33 +1,22 @@
-import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 from bitnet import replace_linears_in_hf
 
-# Load a model from Hugging Face's Transformers
-model_name = "bert-base-uncased"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForSequenceClassification.from_pretrained(model_name)
+from transformers import GPT2Tokenizer, GPT2LMHeadModel
 
-# Replace Linear layers with BitLinear
-replace_linears_in_hf(model)
+tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+head_model = GPT2LMHeadModel.from_pretrained('gpt2')
 
-# Example text to classify
-text = "Replace this with your text"
-inputs = tokenizer(
-    text, return_tensors="pt", padding=True, truncation=True, max_length=512
-)
+text = "Shanghai is great place to live, "
+encoded_input = tokenizer(text, return_tensors='pt')
+output = head_model.generate(**encoded_input)
+output = tokenizer.decode(output[0], skip_special_tokens=True)
+print("GPT2 output (before replacement of linears): ", output)
 
-# Perform inference
-model.eval()  # Set the model to evaluation mode
-with torch.no_grad():
-    outputs = model(**inputs)
-    predictions = torch.nn.functional.softmax(outputs.logits, dim=-1)
-    print(predictions)
+# Replace all linears in the model with bit-wise operations
+replace_linears_in_hf(head_model)
 
-# Process predictions
-predicted_class_id = predictions.argmax().item()
-print(f"Predicted class ID: {predicted_class_id}")
+text = "Shanghai is great place to live, "
+encoded_input = tokenizer(text, return_tensors='pt')
+output = head_model.generate(**encoded_input)
+output = tokenizer.decode(output[0], skip_special_tokens=True)
 
-# Optionally, map the predicted class ID to a label, if you know the classification labels
-# labels = ["Label 1", "Label 2", ...]  # Define your labels corresponding to the model's classes
-# print(f"Predicted label: {labels[predicted_class_id]}")
+print("GPT2 output (after replacement of linears): ", output)
