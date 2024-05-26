@@ -1,5 +1,5 @@
 import torch
-from gemm_lowbit_ext import gemm_lowbit
+from gemm_lowbit_cpp import gemm_lowbit
 
 # Example usage
 a = torch.randn(10, 20, dtype=torch.half, device="cuda")  # Example tensor

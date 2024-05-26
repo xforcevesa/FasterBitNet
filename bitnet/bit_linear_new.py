@@ -54,7 +54,7 @@ class BitLinearNew(nn.Linear):
         x_norm = SimpleRMSNorm(self.in_features)(x)
 
         # STE using detach
-        x_quant = x_norm + (activation_quant(x_norm) - x_norm).detach()
-        w_quant = w + (weight_quant(w) - w).detach()
+        x_quant = activation_quant(x_norm)
+        w_quant = weight_quant(w)
         y = F.linear(x_quant, w_quant)
         return y
