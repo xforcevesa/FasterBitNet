@@ -1,3 +1,4 @@
-torch
-einops
+python>=3.8
+torch>=2.0.1
 zetascale
+einops

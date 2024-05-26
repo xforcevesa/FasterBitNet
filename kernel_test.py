@@ -1,15 +1,27 @@
+import time
 import torch
 from gemm_lowbit_cpp import gemm_lowbit_forward
 
+torch.set_default_device("cuda")  # Set default device to CUDA
+
 # Example usage
-a = torch.randn(10, 20, dtype=torch.half, device="cuda")  # Example tensor
-b = torch.randn(20, 30, dtype=torch.half, device="cuda")  # Example tensor
-c = torch.empty(10, 30, dtype=torch.half, device="cuda")  # Output tensor
+a = torch.ones(1000, 2000, dtype=torch.half, device="cuda")  # Example tensor
+b = torch.ones(2000, 3000, dtype=torch.half, device="cuda")  # Example tensor
+c = torch.empty(1000, 3000, dtype=torch.half, device="cuda")  # Output tensor
 
-w_scale = 1.0  # Example scale factor
-x_scale = 1.0  # Example scale factor
-
+tic = time.time_ns()  # Example timer
 # Call the custom CUDA GEMM operation
-gemm_lowbit_forward(a, b, c, w_scale, x_scale)
+gemm_lowbit_forward(a, b, c)
+toc = time.time_ns()  # Example timer
 
-print(c)  # View the result
+print(f"Time taken: {(toc - tic) / 1e6:.6f} milliseconds")  # Example timer output
+
+tic = time.time_ns()  # Example timer
+ab = a @ b  # Example matrix multiplication
+toc = time.time_ns()  # Example timer
+
+print(f"Time taken: {(toc - tic) / 1e6:.6f} milliseconds")  # Example timer output
+
+print(c.shape, ab.shape)  # Example output comparison
+
+print(((c - ab) ** 2).mean())  # Example loss value

@@ -40,6 +40,29 @@ einops
 
 and also the CUDA-enabled GPU, with the support of Tensor Cores recommended, and CUDA toolkit version 12.0 or higher, which should be installed on your machine.
 
+## Usage
+
+1. Clone the repository:
+```bash
+git clone https://github.com/xforcevesa/FasterBitNet.git
+```
+2. Install the required libraries:
+```bash
+pip install -r requirements.txt
+```
+3. Compile the CUDA kernel functions:
+```bash
+cd kernel
+python setup.py install
+```
+4. Run the unit tests:
+```bash
+cd tests
+python kernel_test.py
+```
+
+You can also import the modules and use them in your own code. Feel free to modify the code and contribute to the project.
+
 ## Contacts
 
 If you have any questions or suggestions, please feel free to contact me at ```nomodeset@qq.com```.

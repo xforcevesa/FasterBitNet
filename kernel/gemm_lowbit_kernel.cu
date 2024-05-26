@@ -17,16 +17,16 @@ __global__ void gemm_lowbit_forward_kernel(fp8 *a, fp8 *b, fp8 *c, int M, int N,
         float sum = 0.0;
         for (int k = 0; k < K; ++k) {
             // Perform the multiplication in higher precision (float) for demonstration purposes.
-            sum += __half2float(a[row * K + k]) * __half2float(b[k * N + col]);
+            sum += a[row * K + k] * b[k * N + col];
         }
-        c[row * N + col] = __float2half(sum); // Store the result as low-precision.
+        c[row * N + col] = sum; // Store the result as low-precision.
     }
 }
 
 // Wrapper function to call the CUDA kernel
 void gemm_lowbit_forward_cuda(at::Tensor a, at::Tensor b, at::Tensor c, int M, int N, int K) {
     // Define the number of threads per block and the number of blocks per grid
-    dim3 threads(16, 16);
+    dim3 threads(256, 256);
     dim3 blocks((N + threads.x - 1) / threads.x, (M + threads.y - 1) / threads.y);
 
     // Launch the kernel
@@ -42,7 +42,8 @@ void gemm_lowbit_forward_cuda(at::Tensor a, at::Tensor b, at::Tensor c, int M, i
 }
 
 // The wrapper function to be called from Python
-void gemm_lowbit_forward(at::Tensor a, at::Tensor b, at::Tensor c, float w_scale, float x_scale) {
+void gemm_lowbit_forward(at::Tensor a, at::Tensor b, at::Tensor c) {
+    // Extract dimensions of the inputs
     auto M = a.size(0);
     auto K = a.size(1);
     auto N = b.size(1);
@@ -54,9 +55,6 @@ void gemm_lowbit_forward(at::Tensor a, at::Tensor b, at::Tensor c, float w_scale
 
     // Call the CUDA kernel wrapper
     gemm_lowbit_forward_cuda(a, b, c, M, N, K);
-
-    // Apply scale factors
-    c.div_(w_scale * x_scale);
 }
 
 // The PyBind11 module definition

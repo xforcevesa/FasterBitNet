@@ -3,6 +3,7 @@ from torch.utils import cpp_extension
 
 setup(
       name='gemm_lowbit_cpp',
+      version='0.1',
       ext_modules=[
             cpp_extension.CppExtension(
                   'gemm_lowbit_cpp',
