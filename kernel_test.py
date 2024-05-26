@@ -1,5 +1,5 @@
 import torch
-from gemm_lowbit_cpp import gemm_lowbit
+from gemm_lowbit_cpp import gemm_lowbit_forward
 
 # Example usage
 a = torch.randn(10, 20, dtype=torch.half, device="cuda")  # Example tensor
@@ -10,6 +10,6 @@ w_scale = 1.0  # Example scale factor
 x_scale = 1.0  # Example scale factor
 
 # Call the custom CUDA GEMM operation
-gemm_lowbit(a, b, c, w_scale, x_scale)
+gemm_lowbit_forward(a, b, c, w_scale, x_scale)
 
 print(c)  # View the result
