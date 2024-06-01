@@ -1,15 +1,9 @@
 #include <torch/extension.h>
-#include <vector>
-
-// CUDA forward declarations
-void gemm_lowbit_cuda(at::Tensor a, at::Tensor b, at::Tensor c, int M, int N, int K);
-// Simplified definition of a low-precision data type (e.g., FP8)
-// This is purely illustrative. Actual FP8 implementation will vary and might require custom handling.
-typedef at::Half fp8;
+#include <stdio.h>
 
 // CUDA kernel for a simplified low-precision GEMM operation.
 // This version assumes the inputs are already in the desired low-precision format.
-__global__ void gemm_lowbit_forward_kernel(fp8 *a, fp8 *b, fp8 *c, int M, int N, int K) {
+__global__ void gemm_lowbit_forward_kernel(int8_t *a, int8_t *b, int8_t *c, int M, int N, int K) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -26,14 +20,16 @@ __global__ void gemm_lowbit_forward_kernel(fp8 *a, fp8 *b, fp8 *c, int M, int N,
 // Wrapper function to call the CUDA kernel
 void gemm_lowbit_forward_cuda(at::Tensor a, at::Tensor b, at::Tensor c, int M, int N, int K) {
     // Define the number of threads per block and the number of blocks per grid
-    dim3 threads(256, 256);
+    dim3 threads(32, 32);
     dim3 blocks((N + threads.x - 1) / threads.x, (M + threads.y - 1) / threads.y);
+
+    printf("threads: %d x %d, blocks: %d x %d\n", threads.x, threads.y, blocks.x, blocks.y);
 
     // Launch the kernel
     gemm_lowbit_forward_kernel<<<blocks, threads>>>(
-        a.data_ptr<fp8>(),
-        b.data_ptr<fp8>(),
-        c.data_ptr<fp8>(),
+        a.data_ptr<int8_t>(),
+        b.data_ptr<int8_t>(),
+        c.data_ptr<int8_t>(),
         M, N, K
     );
 
@@ -47,11 +43,15 @@ void gemm_lowbit_forward(at::Tensor a, at::Tensor b, at::Tensor c) {
     auto M = a.size(0);
     auto K = a.size(1);
     auto N = b.size(1);
+    
+    printf("M: %d, K: %d, N: %d\n", M, K, N);
 
     // Ensure inputs are on the correct device and are of half precision
-    a = a.to(at::device(at::kCUDA).dtype(at::kHalf));
-    b = b.to(at::device(at::kCUDA).dtype(at::kHalf));
-    c = c.to(at::device(at::kCUDA).dtype(at::kHalf));
+    a = a.to(at::device(at::kCUDA));
+    b = b.to(at::device(at::kCUDA));
+    c = c.to(at::device(at::kCUDA));
+
+    printf("a: %d x %d, b: %d x %d, c: %d x %d\n", M, K, K, N, M, N);
 
     // Call the CUDA kernel wrapper
     gemm_lowbit_forward_cuda(a, b, c, M, N, K);
