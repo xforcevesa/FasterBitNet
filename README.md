@@ -12,6 +12,8 @@ It's on the basis of the [BitNet](https://arxiv.org/abs/1905.09788) architecture
 
 The old README is also available [here](README_OLD.md).
 
+Also, you can find a demo I wrote in the `demo` directory. cd to it and make all and run!
+
 ## Structures
 
 The code is based on the PyTorch framework and can be run on any machine with a CUDA-enabled GPU. The code is divided into the following modules:
@@ -19,10 +21,8 @@ The code is based on the PyTorch framework and can be run on any machine with a 
 1. `bitnet`: This module contains the implementation of the BitNet architecture, from the final basical connected layers to Attention Mechanisms and MoE layers, and also even the implementation of the popular neural network layers such as Transformers, Mamba, LlaMA, and so on.
 2. `kernel`: This module contains the implementation of the kernel functions used in the BitNet architecture, to perform the 1/2-bit quantization and dequantization of the network's weights and activations.
 3. `tests`: This module contains the implementation of the unit tests for the BitNet architecture and the kernel functions.
-4. `bit_attention.py`: This module uses our implementation of the BitAttention mechanism to replace the standard attention mechanism in the BitNet architecture.
-5. `bit_ffn.py`: This module uses our implementation of the BitFFN architecture to replace the standard FFN architecture in the BitNet architecture.
-6. `bit_mamba.py`: This module uses our implementation of the BitMamba architecture to replace the standard Mamba architecture in the BitNet architecture.
-7. `kernel_test.py`: This module contains the implementation of the unit tests for the kernel functions, including the correctness tests and the performance tests.
+4. `demo`: This directory contains the implementation of GEMM algorithm using cuBLAS library, which is used to perform the matrix multiplication in the BitNet architecture.
+5. `kernel_test.py`: This module contains the implementation of the unit tests for the kernel functions, including the correctness tests and the performance tests.
 ...
 
 The code is still under development and will be updated frequently.

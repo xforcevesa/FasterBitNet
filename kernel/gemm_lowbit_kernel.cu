@@ -20,7 +20,7 @@ __global__ void gemm_lowbit_forward_kernel(int8_t *a, int8_t *b, int8_t *c, int 
 // Wrapper function to call the CUDA kernel
 void gemm_lowbit_forward_cuda(at::Tensor a, at::Tensor b, at::Tensor c, int M, int N, int K) {
     // Define the number of threads per block and the number of blocks per grid
-    dim3 threads(32, 32);
+    dim3 threads(36, 36);
     dim3 blocks((N + threads.x - 1) / threads.x, (M + threads.y - 1) / threads.y);
 
     printf("threads: %d x %d, blocks: %d x %d\n", threads.x, threads.y, blocks.x, blocks.y);
@@ -32,6 +32,39 @@ void gemm_lowbit_forward_cuda(at::Tensor a, at::Tensor b, at::Tensor c, int M, i
         c.data_ptr<int8_t>(),
         M, N, K
     );
+
+    // Wait for GPU to finish before accessing on host
+    cudaDeviceSynchronize();
+}
+
+// Wrapper function to call the CUDA kernel
+void gemm_lowbit_forward_cublas(at::Tensor a, at::Tensor b, at::Tensor c, int M, int N, int K) {
+    printf("threads: %d x %d, blocks: %d x %d\n", threads.x, threads.y, blocks.x, blocks.y);
+
+    auto a_data = a.data_ptr<int8_t>(); // [M, K]
+    auto b_data = b.data_ptr<int8_t>(); // [K, N]
+    auto c_data = c.data_ptr<int8_t>(); // [M, N]
+
+    printf("a: %d x %d, b: %d x %d, c: %d x %d\n", M, K, K, N, M, N);
+
+    // Launch the cuBLAS
+
+    
+
+    cublasStatus_t status = cublasSgemm(
+        handle,
+        CUBLAS_OP_N, CUBLAS_OP_N,
+        N, M, K,
+        &alpha,
+        b_data, N,
+        a_data, K,
+        &beta,
+        c_data, N
+    );
+
+    if (status != CUBLAS_STATUS_SUCCESS) {
+        printf("CUBLAS error: %d\n", status);
+    }
 
     // Wait for GPU to finish before accessing on host
     cudaDeviceSynchronize();
